@@ -145,7 +145,7 @@ public:
 		int id2 = (*it).second;
 		return search(id1, id2);
 	}
-	int search(int id1, int id2)
+	/*int search(int id1, int id2)
 	{
 		queue<Info> q;
 		q.push(Info(0,id1));
@@ -159,17 +159,114 @@ public:
 			int cur_node = cur.data;
 			int cur_step = cur.step;
 			if (cur_node == id2)
-				return cur_node - 1;
+				return cur_step - 1;
 			bflag[cur_node] = true;
 			for(int i = 0; i < cur_cnt; ++i)
 			{
 				int cur_next = m_nodes[cur_node][i];
 				if (cur_next == 1 && bflag[i] == false)
-					q.push(Info(cur.step+1,i));
+					q.push(Info(cur_step+1,i));
 			}
 		}
 		return -1;
-	}
+	}*/
+		/*int search(int id1, int id2)
+		{
+			int** ppint = new int*[100];
+			for (int i = 0; i < 100; ++i)
+			{
+				ppint[i] = new int[100];
+				//memset((void*)ppint[i],0,sizeof(int)*100);
+				for (int j = 0; j < 100; ++j)
+				{
+					if (m_nodes[i][j] == 1)
+						ppint[i][j] = 1;
+					else
+						ppint[i][j] = 0x1f7f7f7f;
+				}
+			}
+			for (int i = 0; i < cur_cnt; ++i)
+			{
+				for (int j = 0; j < cur_cnt; ++j)
+				{
+					for (int k = 0; k < cur_cnt; ++k)
+					{
+						if (i!=j && i!=k && j!=k && ppint[i][k] + ppint[k][j] < ppint[i][j])
+							ppint[i][j] = ppint[i][k] + ppint[k][j];
+					}
+				}
+			}
+			int res = ppint[id1][id2] == 0x1f7f7f7f ? -1 : ppint[id1][id2] - 1;
+			for (int i = 0; i < 100; ++i)
+			{
+				delete [] ppint[i];
+			}
+			delete [] ppint;
+			return res;
+		}*/
+
+			//dijstra算法
+		int search(int id1, int id2)
+		{
+			int s[100] = {0};
+			int** ppint = new int*[100];
+			for (int i = 0; i < 100; ++i)
+			{
+				ppint[i] = new int[100];
+				for (int j = 0; j < 100; ++j)
+				{
+					if (m_nodes[i][j] == 1)
+						ppint[i][j] = 1;
+					else
+						ppint[i][j] = 0x1f7f7f7f;
+				}
+			}
+
+			s[id1] = 1;
+			int dist[100];  //距离数组，从起点到i点的距离
+
+			//初始化距离数组的值
+			for (int i = 0; i < 100;++i)
+			{
+				dist[i] = 0x1f7f7f7f;
+			}
+			//设置起点距离起点的距离为0
+			dist[id1] = 0;
+
+			//主循环
+			for (int i = 0; i < cur_cnt; ++i)
+			{
+
+				//找到没有在s集合中的距离最短的点，并且求出这个最短距离
+				int minDist = 0x1f7f7f7f;
+				int cur_nearest = id1;
+				for (int v = 0; v < cur_cnt; ++v)
+				{
+					if (s[v]==0 && dist[v] < minDist)
+					{
+						cur_nearest = v;
+						minDist = dist[v];
+					}
+				}
+				//将这个点加入到s集合
+				s[cur_nearest] = 1;
+
+				//通过这个新的点cur_nearest来更新距离数组，只更新不在s集合中的数组就好了
+				for (int i = 0; i < cur_cnt;++i)
+				{
+					if (s[i]==0 && dist[i] > dist[cur_nearest] + ppint[cur_nearest][i])
+						dist[i] = dist[cur_nearest] + ppint[cur_nearest][i];
+				}
+			}
+
+			int res = dist[id2] == 0x1f7f7f7f ? -1 : dist[id2] - 1;
+			for (int i = 0; i < 100; ++i)
+			{
+				delete [] ppint[i];
+			}
+			delete [] ppint;
+			return res;
+		}
 	void Clear()
 	{
 		//m_nodes.clear();
@@ -188,21 +285,47 @@ int Graph::cur_cnt = 0;
 Graph g_graph;
 int main()
 {	
-	for (int i = 0; i < 1000; ++i)
+	char tmp[100],tmp2[100];
+	for (int i = 0; i < 100; ++i)
 	{
-	g_graph.addboard("a");
-	g_graph.addboard("b");
-	g_graph.addboard("c");
-	g_graph.addboard("d");
-	g_graph.addboard("e");
-	g_graph.addboard("f");
-	g_graph.connect("a","b");
-	g_graph.connect("c","b");
-	g_graph.connect("d","b");
-	g_graph.connect("e","b");
-	cout << g_graph.findlength("a","f") << endl;
-	g_graph.Clear();
+		string s = to_string(i);
+		strcpy(tmp,s.c_str());
+		g_graph.addboard(tmp);
 	}
-
+	for (int i = 0; i <= 90; ++i)
+	{
+		for (int j = i + 1; j < i + 11; ++j)
+		{
+			//if (i==j) continue;
+			string s1 = to_string(i);
+			strcpy(tmp,s1.c_str());
+			string s2 = to_string(j);
+			strcpy(tmp2,s2.c_str());
+			g_graph.connect(tmp,tmp2);
+		}
+	}
+	cout << g_graph.m_nodes[70][80] << endl;
+	cout << g_graph.findlength("0","99") << endl;
+	g_graph.Clear();
+	for (int i = 0; i < 100; ++i)
+	{
+		string s = to_string(i);
+		strcpy(tmp,s.c_str());
+		g_graph.addboard(tmp);
+	}
+	for (int i = 0; i <= 90; ++i)
+	{
+		for (int j = i + 1; j < i + 11; ++j)
+		{
+			//if (i==j) continue;
+			string s1 = to_string(i);
+			strcpy(tmp,s1.c_str());
+			string s2 = to_string(j);
+			strcpy(tmp2,s2.c_str());
+			g_graph.connect(tmp,tmp2);
+		}
+	}
+	cout << g_graph.m_nodes[70][80] << endl;
+	cout << g_graph.findlength("0","99") << endl;
 
 }
